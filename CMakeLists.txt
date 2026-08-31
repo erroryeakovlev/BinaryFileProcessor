@@ -13,8 +13,6 @@ qt_add_executable(BinaryFileProcessor
     mainwindow.ui
     Fileprocessor.h Fileprocessor.cpp
     ProcessingWorker.h ProcessingWorker.cpp
-    fileprocessor.cpp
-    fileprocessor.cpp
 )
 
 target_link_libraries(BinaryFileProcessor
