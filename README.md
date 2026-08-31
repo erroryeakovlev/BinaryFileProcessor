@@ -1,45 +1,45 @@
 # Binary File Processor
 
-   C++/Qt         XOR   8- .
+Тестовое приложение на C++/Qt для обработки бинарных файлов с использованием побитовой операции XOR с заданным 8-байтным ключом.
 
-          .
+Программа предназначена для обработки файлов большого объёма без блокировки графического интерфейса.
 
-## 
+## Возможности
 
-*     ;
-*     ;
-*    ;
-*     `;`;
-*   `.txt`, `*.txt`, `testFile.bin`   ;
-* XOR  8- ,    HEX;
-*    ;
-*       ;
-*      ;
-*   ;
-*     ;
-*   ;
-*   ;
-*   ;
-*    ;
-*  ;
-*      ;
-*         .
+* выбор директории с входными файлами;
+* выбор директории для сохранения результатов;
+* задание масок входных файлов;
+* поддержка нескольких масок через `;`;
+* поддержка масок `.txt`, `*.txt`, `testFile.bin` и других вариантов;
+* XOR с 8-байтным значением, введённым в формате HEX;
+* перезапись существующего выходного файла;
+* автоматическое добавление счётчика к имени выходного файла;
+* удаление исходного файла после успешной обработки;
+* однократный запуск обработки;
+* периодический поиск файлов по таймеру;
+* настройка периода опроса;
+* отображение текущего статуса;
+* отображение прогресса обработки;
+* пауза и продолжение обработки;
+* остановка обработки;
+* корректное завершение приложения во время обработки;
+* обработка больших файлов без загрузки всего файла в память.
 
 ## XOR
 
-  16  , :
+Пользователь вводит 16 шестнадцатеричных символов, например:
 
 ```text
 1234567890ABCDEF
 ```
 
-   8- :
+Значение интерпретируется как 8-байтный ключ:
 
 ```text
 12 34 56 78 90 AB CD EF
 ```
 
-     :
+Ключ циклически повторяется по всему файлу:
 
 ```text
 input[0] XOR 0x12
@@ -51,134 +51,134 @@ input[8] XOR 0x12
 ...
 ```
 
-##    
+## Работа с большими файлами
 
-     .
+Файл не загружается целиком в память.
 
-    1 MiB:
+Обработка выполняется чанками размером 1 MiB:
 
 ```text
- 
-    
+Входной файл
+    ↓
 1 MiB
-    
+    ↓
 XOR
-    
-
-    
- 1 MiB
-    
+    ↓
+Запись
+    ↓
+следующий 1 MiB
+    ↓
 ...
 ```
 
-    `QThread`,   GUI-       ,    10 GB.
+Обработка выполняется в отдельном `QThread`, поэтому основной GUI-поток не блокируется во время обработки больших файлов, включая файлы объёмом 10 GB.
 
 ## Pause / Resume
 
-    `std::condition_variable`.
+Пауза реализована с использованием `std::condition_variable`.
 
-  `Pause` worker      .
+При нажатии `Pause` worker приостанавливает обработку после завершения текущего чанка.
 
- `Resume`     .
+При `Resume` обработка продолжается с текущего места.
 
-##    
+## Остановка и завершение приложения
 
-       :
+Состояние остановки и паузы хранится в атомарных переменных:
 
 ```cpp
 std::atomic_bool stopRequested;
 std::atomic_bool pauseRequested;
 ```
 
-  worker      .
+При остановке worker завершает текущую операцию и прекращает обработку.
 
-  :
+При закрытии приложения:
 
-1.    ;
-2.   `condition_variable`,  worker   ;
-3.     worker  `QThread::wait()`.
+1. отправляется запрос на остановку;
+2. снимается ожидание `condition_variable`, если worker находится на паузе;
+3. основной поток ожидает завершения worker через `QThread::wait()`.
 
-##  
+## Временные файлы
 
-        `.part`.
+Результат сначала записывается во временный файл с расширением `.part`.
 
-        .
+После успешного завершения обработки временный файл переименовывается в итоговый.
 
-        .
+Это позволяет не использовать незавершённый результат под финальным именем.
 
-##  
+## Таймерный режим
 
-       .
+В режиме таймера программа периодически сканирует входную директорию.
 
-   :
+Для обработанных файлов сохраняются:
 
-*  ;
-*   .
+* размер файла;
+* время последнего изменения.
 
-    ,    .
+Если эти значения не изменились, файл повторно не обрабатывается.
 
-  ,      .
+Если файл изменился, он снова становится доступен для обработки.
 
-##  
+## Структура проекта
 
 ```text
 .
- CMakeLists.txt
- main.cpp
- mainwindow.cpp
- mainwindow.h
- mainwindow.ui
- ProcessingWorker.cpp
- ProcessingWorker.h
- Fileprocessor.cpp
- Fileprocessor.h
- tests/
-     FileProcessorSmokeTest.cpp
+├── CMakeLists.txt
+├── main.cpp
+├── mainwindow.cpp
+├── mainwindow.h
+├── mainwindow.ui
+├── ProcessingWorker.cpp
+├── ProcessingWorker.h
+├── Fileprocessor.cpp
+├── Fileprocessor.h
+└── tests/
+    └── FileProcessorSmokeTest.cpp
 ```
 
 ### `MainWindow`
 
- :
+Отвечает за:
 
-*  ;
-*  ;
-*  ;
-*   ;
-*  ;
-*  worker;
-*    .
+* графический интерфейс;
+* валидацию параметров;
+* выбор директорий;
+* выбор режима запуска;
+* таймерное сканирование;
+* управление worker;
+* отображение статуса и прогресса.
 
 ### `ProcessingWorker`
 
- :
+Отвечает за:
 
-*   ;
-*  `FileProcessor`;
+* обработку списка файлов;
+* запуск `FileProcessor`;
 * Pause / Resume;
 * Stop;
-*   ;
-*    ;
-* overwrite /  .
+* расчёт общего прогресса;
+* создание временных выходных файлов;
+* overwrite / автоматическое переименование.
 
-   `QThread`.
+Работает в отдельном `QThread`.
 
 ### `FileProcessor`
 
-     .
+Содержит непосредственно логику обработки бинарного файла.
 
-    1 MiB,    XOR   8- .
+Файл читается чанками по 1 MiB, каждый байт модифицируется XOR с циклическим 8-байтным ключом.
 
-## 
+## Сборка
 
-### 
+### Требования
 
-* Qt 6.5  ;
-* CMake 3.19  ;
+* Qt 6.5 или новее;
+* CMake 3.19 или новее;
 * C++ compiler.
 
-###   CMake
+### Сборка через CMake
 
- Qt   :
+Если Qt не находится автоматически:
 
 ```bash
 cmake -S . -B build \
@@ -187,7 +187,7 @@ cmake -S . -B build \
 cmake --build build
 ```
 
-  macOS:
+Пример для macOS:
 
 ```bash
 cmake -S . -B build \
@@ -196,21 +196,21 @@ cmake -S . -B build \
 cmake --build build
 ```
 
-## 
+## Тесты
 
-   smoke test  `FileProcessor`.
+В проекте предусмотрен smoke test для `FileProcessor`.
 
- :
+Тест проверяет:
 
-*   ;
-*  ;
-*  8- XOR-;
-*  ;
-*   ;
-*   ;
-*    .
+* создание бинарного файла;
+* обработку файла;
+* корректность 8-байтного XOR-ключа;
+* повторение ключа;
+* обработку нескольких чанков;
+* размер выходного файла;
+* корректность каждого обработанного байта.
 
-:
+Запуск:
 
 ```bash
 cmake -S . -B build \
@@ -221,7 +221,7 @@ cmake --build build --target FileProcessorSmokeTest
 ctest --test-dir build --output-on-failure
 ```
 
- :
+Ожидаемый результат:
 
 ```text
 100% tests passed, 1 tests passed out of 1
@@ -229,84 +229,84 @@ ctest --test-dir build --output-on-failure
 
 ## Windows / MinGW
 
-   GitHub Actions workflow:
+Для проекта настроен GitHub Actions workflow:
 
 ```text
 .github/workflows/windows-mingw.yml
 ```
 
-Workflow   Windows x64  :
+Workflow выполняется на Windows x64 и включает:
 
-1.  Qt;
-2.  MinGW toolchain;
-3.    CMake;
-4.  ;
-5.  `FileProcessorSmokeTest`;
-6.  Qt runtime-  `windeployqt`;
-7.   Windows artifact.
+1. установку Qt;
+2. настройку MinGW toolchain;
+3. конфигурацию проекта через CMake;
+4. сборку приложения;
+5. запуск `FileProcessorSmokeTest`;
+6. подготовку Qt runtime-зависимостей через `windeployqt`;
+7. создание готового Windows artifact.
 
-Windows-   :
+Windows-сборка включает автоматическую проверку:
 
 ```text
 Build
-  
+  ↓
 FileProcessorSmokeTest
-  
+  ↓
 windeployqt
-  
+  ↓
 Windows artifact
 ```
 
-##     Windows
+## Установка и запуск на Windows
 
-   Windows-    Qt, Qt Creator, CMake  MinGW.
+Для запуска готовой Windows-сборки не требуется устанавливать Qt, Qt Creator, CMake или MinGW.
 
-###  Windows-
+### Получение Windows-сборки
 
-1.     GitHub.
-2.    **Actions**.
-3.    workflow **Windows MinGW Build**.
-4.       **Artifacts**.
-5.   `BinaryFileProcessor-Windows`.
-6.     .
+1. Открыть репозиторий проекта на GitHub.
+2. Перейти в раздел **Actions**.
+3. Выбрать последний успешный workflow **Windows MinGW Build**.
+4. В нижней части страницы найти раздел **Artifacts**.
+5. Скачать архив `BinaryFileProcessor-Windows`.
+6. Распаковать архив в удобную директорию.
 
-       Qt runtime-.
+Пакет содержит исполняемый файл приложения и необходимые Qt runtime-библиотеки.
 
- :
+Пример структуры:
 
 ```text
 BinaryFileProcessor-Windows/
- BinaryFileProcessor.exe
- Qt6Core.dll
- Qt6Gui.dll
- Qt6Widgets.dll
- ...
- platforms/
-     qwindows.dll
+├── BinaryFileProcessor.exe
+├── Qt6Core.dll
+├── Qt6Gui.dll
+├── Qt6Widgets.dll
+├── ...
+└── platforms/
+    └── qwindows.dll
 ```
 
-### 
+### Запуск
 
-  :
+Запуск выполняется через:
 
 ```text
 BinaryFileProcessor.exe
 ```
 
-   `.exe`    ,      Qt-    `qwindows.dll`.
+Не следует отделять `.exe` от остальных файлов пакета, поскольку приложение использует расположенные рядом Qt-библиотеки и платформенный плагин `qwindows.dll`.
 
-### 
+### Настройка
 
-   :
+После запуска необходимо указать:
 
 ```text
-Input directory        
-Output directory       
-File mask             
-XOR value           16 HEX-
+Input directory    — директория с входными файлами
+Output directory   — директория для результирующих файлов
+File mask          — маска входных файлов
+XOR value          — 16 HEX-символов
 ```
 
-:
+Например:
 
 ```text
 Input directory:  C:\BinaryTest\Input
@@ -315,88 +315,87 @@ File mask:        *.bin
 XOR value:        1234567890ABCDEF
 ```
 
-      `;`:
+Для нескольких масок они указываются через `;`:
 
 ```text
 *.txt;*.bin;testFile.dat
 ```
 
-     `*`:
+Также поддерживается запись расширения без `*`:
 
 ```text
 .txt
 ```
 
-  :
+которая интерпретируется как:
 
 ```text
 *.txt
 ```
 
-###   
+### Режим однократной обработки
 
-      **Start**.
+Выбрать режим одного запуска и нажать **Start**.
 
-          .
+Программа один раз просканирует входную директорию и обработает все подходящие файлы.
 
-###  
+### Режим таймера
 
-    :
+Для автоматического поиска новых файлов:
 
-1.   **Timer**;
-2.   ;
-3.  **Start**.
+1. выбрать режим **Timer**;
+2. указать период опроса;
+3. нажать **Start**.
 
-       .
+После этого программа будет периодически проверять входную директорию.
 
-     ,         .
+Уже обработанный файл не обрабатывается повторно, пока его размер и время последнего изменения не изменятся.
 
-###  
+### Управление обработкой
 
-   :
+Во время обработки доступны:
 
 ```text
-Pause     
-Resume    
-Stop      
+Pause   — приостановить обработку
+Resume  — продолжить обработку
+Stop    — остановить обработку
 ```
 
-         worker-.
+При закрытии приложения во время обработки выполняется корректное завершение worker-потока.
 
-###    Windows
+### Локальная сборка на Windows
 
-     :
+Для сборки проекта из исходников потребуются:
 
-* Qt 6.5  ;
-* CMake 3.19  ;
+* Qt 6.5 или новее;
+* CMake 3.19 или новее;
 * MinGW-compatible C++ compiler.
 
-  :
+После установки зависимостей:
 
 ```powershell
 cmake -S . -B build
 cmake --build build --config Release
 ```
 
-     Qt- :
+Для создания переносимого пакета с Qt-зависимостями используется:
 
 ```powershell
 windeployqt --release --compiler-runtime BinaryFileProcessor.exe
 ```
 
-      Windows artifact  GitHub Actions.
+Для обычного запуска рекомендуется использовать готовый Windows artifact из GitHub Actions.
 
 ## CI
 
-GitHub Actions     Windows-.
+GitHub Actions используется для автоматической проверки Windows-сборки.
 
- workflow :
+В workflow проверяются:
 
-*  CMake;
-*  C++ ;
-*   Windows/MinGW;
-*  `FileProcessor`  CTest;
-*  runtime- Qt.
+* конфигурация CMake;
+* сборка C++ проекта;
+* совместимость с Windows/MinGW;
+* корректность `FileProcessor` через CTest;
+* подготовка runtime-зависимостей Qt.
 
-     Windows artifact `BinaryFileProcessor-Windows`.
-
+Результатом успешного запуска является готовый Windows artifact `BinaryFileProcessor-Windows`.
