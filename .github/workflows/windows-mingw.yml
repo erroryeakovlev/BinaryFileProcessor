@@ -25,6 +25,7 @@ jobs:
           target: 'desktop'
           arch: 'win64_mingw'
           modules: 'qtbase'
+          cache: true
 
       - name: Verify environment
         shell: pwsh
