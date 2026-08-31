@@ -1,0 +1,32 @@
+# Qt / CMake build
+build/
+cmake-build-*/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# qmake
+*.pro.user
+*.pro.user.*
+Makefile.*
+moc_*
+qrc_*
+ui_*
+
+# Application output / generated files
+Output/
+output/
+*.exe
+*.app
+*.o
+*.obj
+*.dll
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+.qtcreator/
