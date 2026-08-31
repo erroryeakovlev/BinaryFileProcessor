@@ -24,7 +24,7 @@ jobs:
           host: 'windows'
           target: 'desktop'
           arch: 'win64_mingw'
-          modules: 'qtbase'
+          archives: 'qtbase'
           cache: true
 
       - name: Verify environment
