@@ -50,3 +50,16 @@ jobs:
         with:
           name: BinaryFileProcessor-Windows
           path: build/BinaryFileProcessor.exe
+     
+            - name: Deploy Qt dependencies
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path deploy
+          Copy-Item build/BinaryFileProcessor.exe deploy/
+          windeployqt --release --compiler-runtime deploy/BinaryFileProcessor.exe
+
+      - name: Upload Windows package
+        uses: actions/upload-artifact@v4
+        with:
+          name: BinaryFileProcessor-Windows
+          path: deploy/ 
