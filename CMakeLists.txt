@@ -33,3 +33,24 @@ qt_generate_deploy_app_script(
     NO_UNSUPPORTED_PLATFORM_ERROR
 )
 install(SCRIPT ${deploy_script})
+
+enable_testing()
+
+add_executable(FileProcessorSmokeTest
+    tests/FileProcessorSmokeTest.cpp
+    Fileprocessor.cpp
+)
+
+target_include_directories(FileProcessorSmokeTest
+    PRIVATE
+    ${CMAKE_SOURCE_DIR}
+)
+
+target_link_libraries(FileProcessorSmokeTest
+    PRIVATE
+    Qt6::Core
+)
+add_test(
+    NAME FileProcessorSmokeTest
+    COMMAND FileProcessorSmokeTest
+)
