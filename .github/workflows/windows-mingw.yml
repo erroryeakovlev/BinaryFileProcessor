@@ -1,0 +1,44 @@
+name: Windows MinGW Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.11.2'
+          host: 'windows'
+          target: 'desktop'
+          arch: 'win64_mingw'
+          modules: 'qtbase'
+
+      - name: Verify environment
+        shell: pwsh
+        run: |
+          qmake --version
+          g++ --version
+          cmake --version
+
+      - name: Configure
+        shell: pwsh
+        run: |
+          qt-cmake -S . -B build -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build
+        shell: pwsh
+        run: |
+          cmake --build build --parallel 2
