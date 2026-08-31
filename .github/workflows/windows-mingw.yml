@@ -45,12 +45,6 @@ jobs:
         run: |
           cmake --build build --parallel 2
 
-      - name: Upload Windows executable
-        uses: actions/upload-artifact@v4
-        with:
-          name: BinaryFileProcessor-Windows
-          path: build/BinaryFileProcessor.exe
-     
       - name: Deploy Qt dependencies
         shell: pwsh
         run: |
@@ -62,4 +56,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: BinaryFileProcessor-Windows
-          path: deploy/ 
+          path: deploy/
