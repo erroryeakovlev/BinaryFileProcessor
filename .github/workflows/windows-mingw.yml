@@ -51,7 +51,7 @@ jobs:
           name: BinaryFileProcessor-Windows
           path: build/BinaryFileProcessor.exe
      
-            - name: Deploy Qt dependencies
+      - name: Deploy Qt dependencies
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force -Path deploy
